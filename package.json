@@ -1,0 +1,17 @@
+{
+  "name": "fantays-rd2l",
+  "version": "1.0.1",
+  "description": "fantasyrd2l calculator and application and discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "node . "
+  },
+  "author": "fierysnake",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "node-cron": "^2.0.3",
+    "node-fetch": "^2.6.0",
+    "sqlite3": "^4.1.0"
+  }
+}

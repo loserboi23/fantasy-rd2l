@@ -18,7 +18,6 @@ var help_string = fs.readFileSync('helptext.txt');
 
 
 var locked = false;
-
 var current_week = 0;
 
 

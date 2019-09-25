@@ -67,3 +67,5 @@ config.json
 # test files
 delete.js
 
+# database
+fantasy-database.db

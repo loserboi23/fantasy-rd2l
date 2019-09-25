@@ -41,6 +41,43 @@ exports.selectQuery = function(sql, parameters = [])
 }
 
 
+exports.massInsertQuery = function(sql, parameters = [])
+{
+    return new Promise(function(resolve,reject)
+    {
+        const db = new sqlite3.Database("fantasy-database.db", (err) =>{
+            if(err){
+                console.log(err);
+            }
+            console.log("Connected to the database");
+        });
+
+
+        db.serialize(()=>
+        {
+            var stmt = db.prepare(sql); 
+
+            for(var i = 0; i < parameters.length; i++)
+            {
+                stmt.run(parameters[i]);
+            }
+
+            stmt.finalize();
+
+            resolve("thumbs up");
+
+        });
+
+
+        db.close((err) => {
+            if (err) {
+              return console.error(err.message);
+            }
+            console.log('Close the database connection.');
+          });
+    })
+}
+
 
 exports.insertQuery= function(sql, parameters = [])
 {

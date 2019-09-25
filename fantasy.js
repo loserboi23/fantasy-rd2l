@@ -14,21 +14,28 @@ exports.createFantasyUser = function(discordID)
 
         sqlite.selectQuery(sqlSelect, [discordID]).then((results)=>
         {
-            //Means the user is in the database so we say hes already in it.
-            console.log(results);
-            resolve("You are already in this");
+            if(results.length === 0)
+            {
+                //Means the user is not in the database so we say hes not in it and we create
+                sqlite.insertQuery(sqlInsert, [discordID,0]).then((results)=>
+                {
+                    resolve("You have now been added to the fantasy dota 2 league.")
+
+                }).catch((err)=>
+                {
+                    console.log(err);
+                });
+            }
+            else
+            {              
+                //Means the user is in the database so we say hes already in it.
+                console.log(results);
+                resolve("You are already in this");
+            }
 
         }).catch((err)=>
         {
-            //Means the user is not in the database so we say hes not in it and we create
-            sqlite.insertQuery(sqlInsert, [discordID,0]).then((results)=>
-            {
-                resolve("You have now been added to the fantasy dota 2 league.")
-
-            }).catch((err)=>
-            {
-                console.log(err);
-            });
+            resolve("Something wrong");
         });
         
     });
@@ -135,8 +142,6 @@ exports.pickingIndividual = function(discordID, week, playerid, picknum)
         var findFantasyUser = 'SELECT * FROM fantasy_user WHERE (id = ?)';
         var makeSurePlayerIDsValid = 'SELECT * FROM players WHERE (id = ?) AND (pickorder = ?)';
         var checkFantasyHand = 'SELECT * FROM fantasyhand WHERE (discord_id = ?) AND (matchweek = ?)';
-        var createFantasyHand;
-        var updateFantasyHand;
 
         sqlite.selectQuery(findFantasyUser,[discordID]).then(()=>
         {
@@ -250,11 +255,189 @@ exports.calculateAllFantasyPoints = function(week)
         var calculateAllTotalFantasyPoints;
         var updateFantasyHands;
 
-
-
     });
 }
 
+
+exports.importFantasy = function(matchID, bool, week)
+{
+
+    return new Promise(function(resolve,reject)
+    {
+        var string_to_send = "` (kills + deaths + teamfight + cs + gpm + towers + roshan + obs_placed + camps_stack + runes + fb + stuns) * (captainhandicap) \n\n";
+
+        fetch("https://api.opendota.com/api/matches/" + matchID).then(function(response)
+        {
+            console.log("Got it " + matchID);
+            return response.json();
+        }).then(function (myJson)
+        {
+            var matchstats = [];
+            var promiseArray = [];
+    
+            for(var i = 0; i < myJson.players.length; i++)
+            {
+                var playerstats = [];
+                var handicap;
+                playerstats.push(myJson.players[i].account_id);
+                playerstats.push(myJson.players[i].kills);
+                playerstats.push(myJson.players[i].deaths);
+                playerstats.push(myJson.players[i].teamfight_participation);
+                playerstats.push(myJson.players[i].last_hits + myJson.players[i].denies );
+                playerstats.push(myJson.players[i].gold_per_min);
+                playerstats.push(myJson.players[i].tower_kills);
+                playerstats.push(myJson.players[i].roshan_kills);
+                if(myJson.players[i].purchase_ward_observer === undefined)
+                {
+                    playerstats.push(0);
+                }
+                else
+                {
+                    playerstats.push(myJson.players[i].purchase_ward_observer);
+                }
+                playerstats.push(myJson.players[i].camps_stacked);
+                playerstats.push(myJson.players[i].rune_pickups);
+                playerstats.push(myJson.players[i].firstblood_claimed);
+                playerstats.push(myJson.players[i].stuns);
+                matchstats.push(playerstats);
+                var result = calculateFantasy(playerstats);
+                promiseArray.push(result);
+            }
+
+            Promise.all(promiseArray).then(function(results)
+            {
+                for(var i = 0; i < results.length; i++)
+                {
+                    string_to_send += results[i][2];
+                    matchstats[i].push(results[i][0]);
+                    matchstats[i].push(results[i][1]);
+                    matchstats[i].push(week);
+                    matchstats[i].push(matchID);
+                }
+
+                string_to_send += '`';
+    
+                if(bool === true)
+                {
+                    sqlInsert = `INSERT INTO playerstats(playerid, playerkills, playerdeaths, playerteamfight, playerCS, playergpm, towerkills, roshankills, obs_placed, 
+                        camps_stacked, runes, first_blood, stun_duration, fantasy_points_gained, fantasy_points_loss, week, matchID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+                    sqlite.massInsertQuery(sqlInsert,matchstats).then(()=>
+                    {
+                        resolve(string_to_send);
+
+                    }).then(()=>
+                    {
+                        resolve("Something wrong");
+                    })
+    
+                }
+                else
+                {
+                    resolve(string_to_send);
+                }
+    
+            }).catch((err)=>
+            {
+                resolve("Something wrong");
+            });
+    
+        });
+    });
+}
+
+function calculateFantasy(playerstats)
+{
+    //return an array
+    //element 0 returns fantasy_points_total;
+    //element 1 returns fantasy_points_loss;
+    //element 2 returns a string for the clientMessage
+
+
+    return new Promise(function(resolve,reject)
+    {        
+        var getIDandHandicap = "SELECT handicap, name FROM players WHERE id = ?";
+
+        sqlite.selectQuery(getIDandHandicap, [playerstats[0]]).then((results)=>
+        {
+            const fantasy = [
+                0.3, //kills
+                -0.15, //deaths
+                5, //teamfight 
+                0.003, //creep score
+                0.002, //gpm
+                1, //tower
+                1, //roshan
+                0.2, //obs wards
+                0.5, //camp stack
+                0.25, //runes
+                4, //fb
+                0.075 // stunval
+                ];
+
+            var arraytoSend = [];
+            var points = 0;
+            var pointsLost;
+            var stringtosend = "";
+            var name;
+            var handicap;
+
+            if(results.length === 0)
+            {
+                name = "ANON";
+                handicap = 0;
+            }
+            else
+            {
+                name = results[0].name;
+                handicap = results[0].handicap;
+            }
+            stringtosend += name + "  :  ";
+
+            for (var i = 0; i < fantasy.length; i++)
+            {
+                if(i === 1)
+                {
+                    //deaths
+                    points += 3 + (playerstats[i+1]*fantasy[i]);
+                    //stringtosend += "(5 + (" + playerstats[i+1] + "*" + fantasy[i] + ")) + ";
+                    stringtosend += (3 + (playerstats[i+1]*fantasy[i])).toFixed(2) + " + ";
+                }
+                else if(i === fantasy.length-1)
+                {
+                    points += playerstats[i+1] * fantasy[i];
+                    stringtosend += (playerstats[i+1] * fantasy[i]).toFixed(2);
+                }
+                else 
+                {
+                    points += playerstats[i+1] * fantasy[i];
+                    //stringtosend += "(" + playerstats[i+1] + "*" + fantasy[i] + ") + ";
+                    stringtosend += (playerstats[i+1] * fantasy[i]).toFixed(2) + " + ";
+                }
+            }
+
+            stringtosend += " = " + points.toFixed(2) + " * " + (1+handicap) + " = " + (points*(1+handicap)).toFixed(2);              
+            if(handicap >= 0)
+            {
+                pointsLost = points*(handicap);
+            }
+            else
+            {
+                pointsLost = points*(1-(1+handicap)*(-1));
+            }
+            points = (points*(1+handicap)).toFixed(2);
+            stringtosend +=" \n\n";
+            arraytoSend.push(points);
+            arraytoSend.push(pointsLost);
+            arraytoSend.push(stringtosend);
+            resolve(arraytoSend);
+
+        }).catch((err)=>
+        {
+            reject("Something wrong");
+        })
+    })
+}
 
 exports.showFantasyHand = function(discordID, week)
 {
@@ -272,22 +455,23 @@ exports.showFantasyHand = function(discordID, week)
                 resolve("You don't have anyone in your hand this week");
             }
             else
-            {
+            {   
                 var myprop = 'player';
                 var endprop = 'id';
                 var temp = [];
     
                 for (var i = 1; i < 6; i++)
                 {
-                    var property = myprop + 'i' + endprop;
-                    var bool = results[0].hasOwnProperty(myprop);
+                    var property = myprop + i + endprop;
+                    var bool = results[0].hasOwnProperty(property);
     
                     if(bool)
                     {
                         temp.push(results[0][property]);
                     }
                 }
-    
+
+
                 sqlite.selectQuery(findPlayerName,temp).then((nameResults)=>
                 {
                     var stringArray = ['NULL','NULL','NULL','NULL','NULL'];

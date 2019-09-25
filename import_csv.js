@@ -4,41 +4,16 @@ const fs = require('fs');
 
 var data = fs.readFileSync('draft_sheet.csv');
 data = data.toString().split('\n');
-    for (var i = 0; i < data.length; i++){
-        data[i] = data[i].split(',');
-    }
-//console.log(data[0]);
-
-for (var i = 0; i < data.length; i++)
-{
-    if (data[i].length ===3)
-    {
-
-    }
-    else
-    {
-        //console.log(i);
-    }
+for (var i = 0; i < data.length; i++){
+    data[i] = data[i].split(',');
 }
-//console.log(data[152]);
 data.pop();
 
 //get captains
 var captaindata = fs.readFileSync('captains.csv');
 captaindata = captaindata.toString().split('\n');
-    for (var i = 0; i < captaindata.length; i++){
-        captaindata[i] = captaindata[i].split(',');
-    }
-for (var i = 0; i < captaindata.length; i++)
-{
-    if (captaindata[i].length ===3)
-    {
-
-    }
-    else
-    {
-        console.log(i);
-    }
+for (var i = 0; i < captaindata.length; i++){
+    captaindata[i] = captaindata[i].split(',');
 }
 captaindata.pop();
 
@@ -55,7 +30,6 @@ for (var i = 0; i < data.length; i++)
     data[i][2] = data[i][2].replace('\r','');
 }
 
-console.log(captaindata);
 
 //import to database
 
@@ -67,6 +41,7 @@ var db = new sqlite3.Database("fantasy-database.db", (err) =>
     }
     console.log("Connected to the database");
 });
+
 
 //Insert Database Sequence
 db.serialize( () => 

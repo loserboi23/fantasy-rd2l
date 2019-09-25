@@ -8,9 +8,8 @@ const db = new sqlite3.Database("fantasy-database.db", (err) =>{
 });
 
 
-
-db.serialize(()=>
-{
+//Delete
+/*
     db.run('DELETE FROM fantasy_user', [], function(err)
     {
         if(err)
@@ -24,6 +23,35 @@ db.serialize(()=>
             console.log(err);
         }
     });
+*/
+
+
+db.serialize(()=>
+{
+    
+    db.all("SELECT * FROM playerstats", function(err,rows)
+    {
+        if(err)
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log(rows);
+        }
+    })
+    
+
+    /*
+   db.run('DELETE FROM playerstats',function(err)
+   {
+        if(err)
+        {
+            console.log(err);
+        }
+   })
+   */
+
 });
 
 

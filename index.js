@@ -14,12 +14,9 @@ var help_string = fs.readFileSync('helptext.txt');
 formula_string = formula_string.toString();
 help_string = help_string.toString();
 
-console.log(help_string);
-
 
 var locked = false;
-var current_week = 0;
-
+var current_week = 1;
 
 //DISCORD CLIENT 
 client.on('ready',() => {
@@ -72,7 +69,7 @@ client.on('message', message=>{
 
         case "record":
             if(message.member.roles.find( x => x.name === 'fantasy-admin'))
-                waitForFantasyCalculation(args[1],true,args[2]);
+                waitForFantasyCalculation(args[1],true,current_week);
             else
                 message.channel.send('You are not an admin and you are not kool. Use calculate to find theoritical points');
             break
@@ -152,29 +149,14 @@ client.on('message', message=>{
     
     }
 
+    async function waitForFantasyCalculation(matchID,bool,week)
+    {
+        let clientMessage = await fantasy.importFantasy(matchID, bool,week);
+        message.channel.send(clientMessage);
+    }
+
 
     
 });
 
 client.login(token);
-
-
-
-//FUNCTIONS
-
-/*
-    All these functions wait for a promise.resolive and output a client message. 
-*/
-
-
-
-/*
-async function waitForFantasyCalculation(args,bool,week)
-{
-    let clientMessage = await importFantasy(args, bool,week);
-    message.channel.send(clientMessage);
-}
-
-
-*/
-

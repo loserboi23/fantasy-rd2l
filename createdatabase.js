@@ -23,8 +23,8 @@ db.serialize(() =>
 {
     db.get("PRAGMA foriegn_keys = ON")
     .run(`CREATE TABLE IF NOT EXISTS players(id INTEGER PRIMARY KEY, handicap REAL, pickorder INTEGER, name TEXT)`)
-    .run(`CREATE TABLE IF NOT EXISTS fantasy_user(id INTEGER PRIMARY KEY, total_fantasy_points INTEGER)`)
-    .run(`CREATE TABLE IF NOT EXISTS fantasyhand(discord_id INTEGER, matchweek INTEGER, player1id INTEGER, player2id INTEGER, player3id INTEGER, player4id INTEGER, player5id INTEGER,
+    .run(`CREATE TABLE IF NOT EXISTS fantasy_user(id INTEGER PRIMARY KEY, total_fantasy_points REAL)`)
+    .run(`CREATE TABLE IF NOT EXISTS fantasyhand(discord_id INTEGER, matchweek INTEGER, player1id INTEGER, player2id INTEGER, player3id INTEGER, player4id INTEGER, player5id INTEGER, pointsGained REAL,
         FOREIGN KEY (discord_id) REFERENCES fantasy_user(id), 
         FOREIGN KEY (matchweek) REFERENCES matches(week), 
         FOREIGN KEY (player1id) REFERENCES players(id), 
@@ -32,7 +32,7 @@ db.serialize(() =>
         FOREIGN KEY (player3id) REFERENCES players(id),
         FOREIGN KEY (player4id) REFERENCES players(id), 
         FOREIGN KEY (player5id) REFERENCES players(id))`)
-    .run(`CREATE TABLE IF NOT EXISTS playerstats(playerid INTERGER, matchID INTERGER, week INTEGER,
+    .run(`CREATE TABLE IF NOT EXISTS playerstats(playerid INTEGER, matchID INTEGER, week INTEGER,
     playerkills INTEGER, 
     playerdeaths INTEGER, 
     playerteamfight REAL,
@@ -47,8 +47,7 @@ db.serialize(() =>
     stun_duration REAL,
     fantasy_points_gained REAL, 
     fantasy_points_loss REAL,  
-    FOREIGN KEY(playerid) REFERENCES players(id),
-    FOREIGN KEY(matchID) REFERENCES matches(id))`); 
+    FOREIGN KEY(playerid) REFERENCES players(id))`); 
 });
 
 db.close((err) => {

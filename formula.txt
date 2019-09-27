@@ -1,2 +1,1 @@
-(0.3*kills) +  (5-(0.15*deaths))  + (5*teamfight_partipation) + (0.003*cs) + (0.002*gpm) + tower kills + roshan kills + " +
-"(0.2*obs_wards_bought) + (0.5*campstacked) + (0.25*runespicked) + (4*firstbloodtaken) + (0.075*stun value)
+`(0.3*kills) +  **(3-(0.15*deaths))**  + **(5*teamfight_partipation)** + (0.003*cs) + (0.002*gpm) + tower kills + roshan kills + + **(0.2*obs_wards_bought)** + (0.5*campstacked) + (0.25*runespicked) + (4*firstbloodtaken) + **(0.075*stun value)** = points * (1+captainhandicap) = total_points`

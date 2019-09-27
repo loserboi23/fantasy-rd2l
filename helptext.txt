@@ -1,0 +1,35 @@
+
+
+
+Prefix is `
+
+COMMANDS
+_________
+
+play - join database and play
+pick <id> <id> <id> <id> <id> -pick (inorder of draft pick)
+pickcaptain <id> -pick captain
+pick1 <id>
+pick2 <id> 
+pick3 <id> 
+pick4 <id> 
+currenthand - returns ur hand for the week
+formula - returns formula calculation 
+help -return the help text with all the commands
+calculate - returns text with points of everyone in the week
+totalpoints - return the total points total of season
+weekgained <week> -return the total points gained in a week
+captain_sheet -return the captainsheet with ids
+player_sheet -return the playersheet with idsg
+github - return the github link for the bot
+currentweek - return the current week
+
+
+ADMINS
+_______
+
+record <matchID> record to add to database
+endweek end the week and add the points to fantasyuser and fantasyhand
+unlock -unlock so players can choose
+lock -lock so players cant choose
+changeweek <num> -change the week to the num

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/loserboi23/fantasy-rd2l#readme",
   "dependencies": {
+    "cron": "^1.7.2",
     "discord.js": "^11.5.1",
     "node-fetch": "^2.6.0",
     "sqlite3": "^4.1.0"

@@ -251,11 +251,64 @@ exports.calculateAllFantasyPoints = function(week)
 {
     return new Promise(function(resolve,reject)
     {
-        var selectAllFantasyHandInWeek;
-        var calculateAllTotalFantasyPoints;
-        var updateFantasyHands;
+        var selectAllFantasyHandInWeek =  `SELECT discord_id, SUM(fantasy_points_gained) FROM fantasyhand fh INNER JOIN (SELECT fantasy_points_gained, playerid, week FROM playerstats) ps ON (fh.player1id = ps.playerid) OR (fh.player2id = ps.playerid)
+        OR (fh.player3id = ps.playerid) OR (fh.player4id = ps.playerid) OR (fh.player5id = ps.playerid) WHERE ps.week = ? GROUP BY discord_id`;
+
+
+        sqlite.selectQuery(selectAllFantasyHandInWeek,[week]).then((results)=>
+        {
+            var promiseArray = [];
+
+            for(var i = 0; i < results.length; i++)
+            {
+                //console.log(results[i].discord_id);
+                //console.log(parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2)));
+                var sum = parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2));
+                var promise = fantasyUpdate(results[i].discord_id, sum);
+                promiseArray.push(promise);
+            }
+
+            Promise.all(promiseArray).then(()=>
+            {
+                resolve("Points have been given for week: " + week);
+
+            }).catch(()=>
+            {
+                resolve("Something wrong");
+            })
+
+
+        }).catch((err)=>
+        {
+            resolve("Something wrong;")
+        })
+
 
     });
+}
+
+function fantasyUpdate(discord_id, points)
+{
+    return new Promise(function(resolve, reject)
+    {
+        var updateFantasyHands = `UPDATE fantasyhand SET pointsGained = ? WHERE (discord_id = ?)`;
+        var updateFantasyUser = `UPDATE fantasy_user SET total_fantasy_points = total_fantasy_points + ? WHERE (id = ?)`;
+
+        sqlite.updateQuery( updateFantasyUser,[points, discord_id]).then(()=>
+        {
+            sqlite.updateQuery(updateFantasyHands,[points, discord_id]).then(()=>
+            {
+                resolve("Added");
+            }).catch(()=>
+            {
+                reject("Something wrong");
+            })
+
+        }).catch(()=>
+        {
+            reject("Something wrong");   
+        })
+    })
 }
 
 
@@ -319,14 +372,33 @@ exports.importFantasy = function(matchID, bool, week)
     
                 if(bool === true)
                 {
-                    sqlInsert = `INSERT INTO playerstats(playerid, playerkills, playerdeaths, playerteamfight, playerCS, playergpm, towerkills, roshankills, obs_placed, 
-                        camps_stacked, runes, first_blood, stun_duration, fantasy_points_gained, fantasy_points_loss, week, matchID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
-                    sqlite.massInsertQuery(sqlInsert,matchstats).then(()=>
+                    sqlSelect = `SELECT * FROM playerstats WHERE matchID = ?`;
+
+                    sqlite.selectQuery(sqlSelect,[matchID]).then((sResults)=>
                     {
-                        resolve(string_to_send);
+                        console.log(sResults);
+                        if(sResults.length === 0)
+                        {
+                            sqlInsert = `INSERT INTO playerstats(playerid, playerkills, playerdeaths, playerteamfight, playerCS, playergpm, towerkills, roshankills, obs_placed, 
+                                camps_stacked, runes, first_blood, stun_duration, fantasy_points_gained, fantasy_points_loss, week, matchID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        
+                            sqlite.massInsertQuery(sqlInsert,matchstats).then(()=>
+                            {
+                                resolve("Inserted MatchID " + matchID);
+        
+                            }).catch(()=>
+                            {
+                                resolve("Something wrong");
+                            })
+                        }
+                        else
+                        {
+                            resolve("Match ID " + matchID + " Already In There");
+                        }
 
-                    }).then(()=>
+
+                    }).catch(()=>
                     {
                         resolve("Something wrong");
                     })
@@ -417,14 +489,8 @@ function calculateFantasy(playerstats)
             }
 
             stringtosend += " = " + points.toFixed(2) + " * " + (1+handicap) + " = " + (points*(1+handicap)).toFixed(2);              
-            if(handicap >= 0)
-            {
-                pointsLost = points*(handicap);
-            }
-            else
-            {
-                pointsLost = points*(1-(1+handicap)*(-1));
-            }
+            pointsLost = (points*(handicap)).toFixed(2);
+            
             points = (points*(1+handicap)).toFixed(2);
             stringtosend +=" \n\n";
             arraytoSend.push(points);
@@ -502,6 +568,57 @@ exports.showFantasyHand = function(discordID, week)
         });
 
     });
+}
+
+
+exports.getTotalPoints = function(discordID)
+{
+    return new Promise(function(resolve,reject)
+    {
+        sql = `SELECT total_fantasy_points FROM fantasy_user WHERE (id = ?)`;
+
+        sqlite.selectQuery(sql, [discordID]).then((result)=>
+        {
+            if (result[0].length === 0)
+            {
+                resolve("Not there you proberly not playing, user command `play to join")
+            }
+            else
+            {
+                resolve("Total Points you have : " + result[0].total_fantasy_points);
+            }
+    
+        }).catch(()=>
+        {
+            resolve("Something wrong");
+        });
+    })
+}
+
+exports.getPointsInWeek = function(discordID, week)
+{
+
+
+    return new Promise(function(resolve,reject)
+    {
+        sql = `SELECT pointsGained FROM fantasyhand WHERE (discord_id = ?) AND (matchweek = ?)`;
+
+        sqlite.selectQuery(sql, [discordID,week]).then((result)=>
+        {
+            if (result.length === 0)
+            {
+                resolve("Not there you proberly not playing, or you didn't create one during this week");
+            }
+            else
+            {
+                resolve("Week " + week + " : " + result[0].pointsGained);
+            }
+    
+        }).catch(()=>
+        {
+            resolve("Something wrong");
+        });
+    })
 }
 
 

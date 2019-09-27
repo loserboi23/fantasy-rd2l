@@ -54,18 +54,22 @@ exports.massInsertQuery = function(sql, parameters = [])
 
 
         db.serialize(()=>
-        {
+        {   
             var stmt = db.prepare(sql); 
 
             for(var i = 0; i < parameters.length; i++)
             {
-                stmt.run(parameters[i]);
+                stmt.run(parameters[i], function(err)
+                {
+                    if(err)
+                    {
+                        console.log(err);
+                        reject(err);
+                    }
+                });
             }
 
             stmt.finalize();
-
-            resolve("thumbs up");
-
         });
 
 
@@ -73,6 +77,8 @@ exports.massInsertQuery = function(sql, parameters = [])
             if (err) {
               return console.error(err.message);
             }
+
+            resolve("thumbs up");
             console.log('Close the database connection.');
           });
     })

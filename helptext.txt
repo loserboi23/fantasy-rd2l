@@ -1,35 +1,22 @@
-
-
-
 Prefix is `
 
 COMMANDS
 _________
 
 play - join database and play
-pick <id> <id> <id> <id> <id> -pick (inorder of draft pick)
+pick <id> <id> <id> <id> <id> -pick ur entire roster of members (inorder of draft pick (captain, first, second, third, fourth))
 pickcaptain <id> -pick captain
-pick1 <id>
-pick2 <id> 
-pick3 <id> 
-pick4 <id> 
+pick1 <id> - pick first pick
+pick2 <id> - pick second pick
+pick3 <id> - pick third pick
+pick4 <id> - pick last pick
 currenthand - returns ur hand for the week
 formula - returns formula calculation 
 help -return the help text with all the commands
-calculate - returns text with points of everyone in the week
+calculate <matchID> - given a matchID calculate the total fantasy points of each player within that match. Players not in the database shows up as ANON
 totalpoints - return the total points total of season
-weekgained <week> -return the total points gained in a week
+weekgained <week> - return the total points gained in that week
 captain_sheet -return the captainsheet with ids
-player_sheet -return the playersheet with idsg
+player_sheet -return the playersheet with ids
 github - return the github link for the bot
 currentweek - return the current week
-
-
-ADMINS
-_______
-
-record <matchID> record to add to database
-endweek end the week and add the points to fantasyuser and fantasyhand
-unlock -unlock so players can choose
-lock -lock so players cant choose
-changeweek <num> -change the week to the num

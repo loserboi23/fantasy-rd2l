@@ -65,7 +65,7 @@ typings/
 config.json
 
 # test files
-delete.js
+database.js
 
 # database
 fantasy-database.db

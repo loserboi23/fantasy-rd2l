@@ -145,8 +145,18 @@ client.on('message', message=>{
         case "weekgained":
             fantasyPointsInWeek(message.author.id, args[1]);
             break;
-        
 
+
+        case "leaderboards":
+            break;
+            
+        case "weekhand":
+            message.reply(message.author.id);
+            break;
+
+        case "changename":
+            break;
+    
         case "captain_sheet":
             message.reply("https://docs.google.com/spreadsheets/d/1My1y4EHpeKo4IL2mzhe7FJz2Fc0ELA7Sewyn1V2qAeg/edit#gid=1359480799");
             break;
@@ -260,13 +270,13 @@ client.login(token).then(()=>
     var channelID = '625904914811453440';
 
 
-    const job = new CronJob('00 00 18 * * 0', function()
+    const job = new CronJob('00 00 18 * * */0', function()
     {
         client.guilds.get(guildID).channels.get(channelID).send("One hour until fantasy points are locked");
 
     }, 'America/Los_Angeles');
 
-    const job2 = new CronJob('00 00 17 * * 0', function()
+    const job2 = new CronJob('00 00 17 * * */0', function()
     {
      
         client.guilds.get(guildID).channels.get(channelID).send("Games are starting its locked");

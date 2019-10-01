@@ -54,11 +54,17 @@ exports.pickingAllFive = function(discordID, week, captainid, player1id, player2
 
 
 
-        sqlite.selectQuery(findFantasyUser, [discordID]).then(() =>
+        sqlite.selectQuery(findFantasyUser, [discordID]).then((selectResults) =>
         {
             //If the fantasy user is in it
-            
-            sqlite.selectQuery(makeSurePlayerIDsValid,[captainid, player1id, player2id, player3id, player4id]).then((results)=>
+
+            if(selectResults.length === 0)
+            {
+                resolve('You are not in the database, use command `play to join')
+            }      
+            else
+            {
+                sqlite.selectQuery(makeSurePlayerIDsValid,[captainid, player1id, player2id, player3id, player4id]).then((results)=>
             {
                 //If the query is valid
 
@@ -124,13 +130,14 @@ exports.pickingAllFive = function(discordID, week, captainid, player1id, player2
                 resolve("Something wrong");
             })
 
+            }
+
         }).catch((selectErr)=>
         {
             //If the fantasy user is not in the database
-            resolve('You are not in the database, use command `play to join');
+            resolve("Something Wrong");
 
         });
-
 
     });
 }
@@ -143,10 +150,17 @@ exports.pickingIndividual = function(discordID, week, playerid, picknum)
         var makeSurePlayerIDsValid = 'SELECT * FROM players WHERE (id = ?) AND (pickorder = ?)';
         var checkFantasyHand = 'SELECT * FROM fantasyhand WHERE (discord_id = ?) AND (matchweek = ?)';
 
-        sqlite.selectQuery(findFantasyUser,[discordID]).then(()=>
+        sqlite.selectQuery(findFantasyUser,[discordID]).then((selectResults)=>
         {
             //Fantasy User is in the database
-            
+
+            if(selectResults.length === 0)
+            {
+                resolve('You are not in the database, use command `play to join');
+            }
+            else
+            {
+                
             sqlite.selectQuery(makeSurePlayerIDsValid,[playerid,picknum]).then((results)=>
             {
                 //make sure the playerid is valid
@@ -234,11 +248,12 @@ exports.pickingIndividual = function(discordID, week, playerid, picknum)
                 //sql for makesurepkayerid is wrong
                 resolve("Something wrong");
             })
+            }
 
         }).catch(()=>
         {
             //Fantasy User is not in the database
-            resolve('You are not in the database, use command `play to join');
+            resolve("Something Wrong");
         })
 
 
@@ -252,10 +267,10 @@ exports.calculateAllFantasyPoints = function(week)
     return new Promise(function(resolve,reject)
     {
         var selectAllFantasyHandInWeek =  `SELECT discord_id, SUM(fantasy_points_gained) FROM fantasyhand fh INNER JOIN (SELECT fantasy_points_gained, playerid, week FROM playerstats) ps ON (fh.player1id = ps.playerid) OR (fh.player2id = ps.playerid)
-        OR (fh.player3id = ps.playerid) OR (fh.player4id = ps.playerid) OR (fh.player5id = ps.playerid) WHERE ps.week = ? GROUP BY discord_id`;
+        OR (fh.player3id = ps.playerid) OR (fh.player4id = ps.playerid) OR (fh.player5id = ps.playerid) INNER JOIN (SELECT name, id FROM players) p ON (p.id = ps.playerid) WHERE (fh.matchweek = ?) AND (ps.week = ?) GROUP BY discord_id`;
 
 
-        sqlite.selectQuery(selectAllFantasyHandInWeek,[week]).then((results)=>
+        sqlite.selectQuery(selectAllFantasyHandInWeek,[week,week]).then((results)=>
         {
             var promiseArray = [];
 
@@ -264,7 +279,7 @@ exports.calculateAllFantasyPoints = function(week)
                 //console.log(results[i].discord_id);
                 //console.log(parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2)));
                 var sum = parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2));
-                var promise = fantasyUpdate(results[i].discord_id, sum);
+                var promise = fantasyUpdate(results[i].discord_id, sum,week);
                 promiseArray.push(promise);
             }
 
@@ -287,18 +302,19 @@ exports.calculateAllFantasyPoints = function(week)
     });
 }
 
-function fantasyUpdate(discord_id, points)
+function fantasyUpdate(discord_id, points,week)
 {
     return new Promise(function(resolve, reject)
     {
-        var updateFantasyHands = `UPDATE fantasyhand SET pointsGained = ? WHERE (discord_id = ?)`;
-        var updateFantasyUser = `UPDATE fantasy_user SET total_fantasy_points = total_fantasy_points + ? WHERE (id = ?)`;
+        var updateFantasyHands = `UPDATE fantasyhand SET pointsGained = ? WHERE (discord_id = ?) AND (matchweek = ?)`; 
+        var updateFantasyUser = `UPDATE fantasy_user SET total_fantasy_points = (SELECT SUM(pointsGained) FROM fantasyhand WHERE discord_id = ?) WHERE id = ?`;
 
-        sqlite.updateQuery( updateFantasyUser,[points, discord_id]).then(()=>
+        sqlite.updateQuery( updateFantasyUser,[points, discord_id,week]).then(()=>
         {
-            sqlite.updateQuery(updateFantasyHands,[points, discord_id]).then(()=>
+            sqlite.updateQuery(updateFantasyHands, [discord_id,discord_id]).then(()=>
             {
                 resolve("Added");
+
             }).catch(()=>
             {
                 reject("Something wrong");

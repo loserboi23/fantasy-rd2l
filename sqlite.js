@@ -40,7 +40,6 @@ exports.selectQuery = function(sql, parameters = [])
     })
 }
 
-
 exports.massInsertQuery = function(sql, parameters = [])
 {
     return new Promise(function(resolve,reject)

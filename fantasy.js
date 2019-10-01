@@ -279,7 +279,7 @@ exports.calculateAllFantasyPoints = function(week)
                 //console.log(results[i].discord_id);
                 //console.log(parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2)));
                 var sum = parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2));
-                var promise = fantasyUpdate(results[i].discord_id, sum,week);
+                var promise = fantasyUpdate(sum,results[i].discord_id,week);
                 promiseArray.push(promise);
             }
 

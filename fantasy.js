@@ -279,7 +279,7 @@ exports.calculateAllFantasyPoints = function(week)
                 //console.log(results[i].discord_id);
                 //console.log(parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2)));
                 var sum = parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2));
-                var promise = fantasyUpdate(sum,results[i].discord_id,week);
+                var promise = fantasyUpdate(results[i].discord_id , sum , week);
                 promiseArray.push(promise);
             }
 
@@ -309,9 +309,9 @@ function fantasyUpdate(discord_id, points,week)
         var updateFantasyHands = `UPDATE fantasyhand SET pointsGained = ? WHERE (discord_id = ?) AND (matchweek = ?)`; 
         var updateFantasyUser = `UPDATE fantasy_user SET total_fantasy_points = (SELECT SUM(pointsGained) FROM fantasyhand WHERE discord_id = ?) WHERE id = ?`;
 
-        sqlite.updateQuery( updateFantasyUser,[points, discord_id,week]).then(()=>
+        sqlite.updateQuery( updateFantasyHands,[points, discord_id,week]).then(()=>
         {
-            sqlite.updateQuery(updateFantasyHands, [discord_id,discord_id]).then(()=>
+            sqlite.updateQuery(updateFantasyUser, [discord_id,discord_id]).then(()=>
             {
                 resolve("Added");
 

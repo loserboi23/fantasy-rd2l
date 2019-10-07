@@ -147,7 +147,7 @@ exports.pickingIndividual = function(discordID, week, playerid, picknum)
     return new Promise(function(resolve,reject)
     {
         var findFantasyUser = 'SELECT * FROM fantasy_user WHERE (id = ?)';
-        var makeSurePlayerIDsValid = 'SELECT * FROM players WHERE (id = ?) AND (pickorder = ?)';
+        var makeSurePlayerIDsValid = 'SELECT * FROM players WHERE (id = ?) AND (pick_order = ?)';
         var checkFantasyHand = 'SELECT * FROM fantasyhand WHERE (discord_id = ?) AND (matchweek = ?)';
 
         sqlite.selectQuery(findFantasyUser,[discordID]).then((selectResults)=>
@@ -266,9 +266,8 @@ exports.calculateAllFantasyPoints = function(week)
 {
     return new Promise(function(resolve,reject)
     {
-        var selectAllFantasyHandInWeek =  `SELECT discord_id, SUM(fantasy_points_gained) FROM fantasyhand fh INNER JOIN (SELECT fantasy_points_gained, playerid, week FROM playerstats) ps ON (fh.player1id = ps.playerid) OR (fh.player2id = ps.playerid)
+        var selectAllFantasyHandInWeek =  `SELECT discord_id, SUM(fantasy_points_gained) as total_points FROM fantasyhand fh INNER JOIN (SELECT fantasy_points_gained, playerid, week FROM playerstats) ps ON (fh.player1id = ps.playerid) OR (fh.player2id = ps.playerid)
         OR (fh.player3id = ps.playerid) OR (fh.player4id = ps.playerid) OR (fh.player5id = ps.playerid) INNER JOIN (SELECT name, id FROM players) p ON (p.id = ps.playerid) WHERE (fh.matchweek = ?) AND (ps.week = ?) GROUP BY discord_id`;
-
 
         sqlite.selectQuery(selectAllFantasyHandInWeek,[week,week]).then((results)=>
         {
@@ -278,8 +277,8 @@ exports.calculateAllFantasyPoints = function(week)
             {
                 //console.log(results[i].discord_id);
                 //console.log(parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2)));
-                var sum = parseFloat(results[i]['SUM(fantasy_points_gained)'].toFixed(2));
-                var promise = fantasyUpdate(results[i].discord_id , sum , week);
+                var sum = parseFloat(results[i]['total_points'].toFixed(2));
+                var promise = fantasyUpdate(results[i]['discord_id'], sum , week);
                 promiseArray.push(promise);
             }
 
@@ -526,7 +525,7 @@ exports.showFantasyHand = function(discordID, week)
     return new Promise(function(resolve,reject)
     {
         var findFantasyHand = 'SELECT player1id, player2id, player3id, player4id, player5id FROM fantasyhand WHERE (discord_id = ?) AND (matchweek = ?)';
-        var findPlayerName = 'SELECT name, pickorder FROM players WHERE (id = ?) OR (id = ?) OR (id = ?) OR (id = ?) OR (id = ?)'; 
+        var findPlayerName = 'SELECT name, pick_order FROM players WHERE (id = ?) OR (id = ?) OR (id = ?) OR (id = ?) OR (id = ?)'; 
         var playerNames =[];
         
         sqlite.selectQuery(findFantasyHand, [discordID, week]).then((results)=>
@@ -561,7 +560,7 @@ exports.showFantasyHand = function(discordID, week)
     
                     for(var i = 0; i < nameResults.length; i++)
                     {
-                        stringArray[nameResults[i].pickorder] = nameResults[i].name;
+                        stringArray[nameResults[i].pick_order] = nameResults[i].name;
                     }
     
                     for(var i = 0; i < stringArray.length; i++)

@@ -20,3 +20,4 @@ captain_sheet -return the captainsheet with ids
 player_sheet -return the playersheet with ids
 github - return the github link for the bot
 currentweek - return the current week
+

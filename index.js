@@ -17,7 +17,7 @@ help_string = help_string.toString();
 
 
 var locked = false;
-var current_week = 2;
+var current_week = 3;
 
 
 
@@ -235,7 +235,7 @@ client.on('message', message=>{
         let clientMessage = await fantasy.pickingIndividual(discordID, current_week, playerid, picknum)
         message.reply(clientMessage);
     }
-
+    
     async function returnHand(discordID)
     {
         let clientMessage = await fantasy.showFantasyHand(discordID,current_week);

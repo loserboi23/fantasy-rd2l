@@ -22,10 +22,13 @@ var db = new sqlite3.Database("fantasy-database.db", (err) =>
 db.serialize(() =>
 {
     db.get("PRAGMA foriegn_keys = ON")
-    .run(`CREATE TABLE IF NOT EXISTS players(id INTEGER PRIMARY KEY, handicap REAL, pickorder INTEGER, name TEXT)`)
-    .run(`CREATE TABLE IF NOT EXISTS fantasy_user(id INTEGER PRIMARY KEY, total_fantasy_points REAL)`)
-    .run(`CREATE TABLE IF NOT EXISTS fantasyhand(discord_id INTEGER, matchweek INTEGER, player1id INTEGER, player2id INTEGER, player3id INTEGER, player4id INTEGER, player5id INTEGER, pointsGained REAL FOREIGN KEY (discord_id) REFERENCES fantasy_user(id), FOREIGN KEY (matchweek) REFERENCES matches(week), FOREIGN KEY (player1id) REFERENCES players(id), FOREIGN KEY (player2id) REFERENCES players(id), FOREIGN KEY (player3id) REFERENCES players(id), FOREIGN KEY (player4id) REFERENCES players(id), FOREIGN KEY (player5id) REFERENCES players(id))`)
-    .run(`CREATE TABLE IF NOT EXISTS playerstats(playerid INTEGER, matchID INTEGER, week INTEGER,
+    .run(`CREATE TABLE IF NOT EXISTS players(id TEXT PRIMARY KEY, handicap REAL, pick_order INTEGER, name TEXT)`)
+    .run(`CREATE TABLE IF NOT EXISTS fantasy_user(id TEXT PRIMARY KEY, total_fantasy_points REAL)`)
+    .run(`CREATE TABLE IF NOT EXISTS fantasyhand(discord_id TEXT, matchweek INTEGER, player1id TEXT, player2id TEXT, player3id TEXT, 
+        player4id TEXT, player5id TEXT, pointsGained REAL FOREIGN KEY (discord_id) REFERENCES fantasy_user(id), FOREIGN KEY (matchweek) REFERENCES matches(week), 
+        FOREIGN KEY (player1id) REFERENCES players(id), FOREIGN KEY (player2id) REFERENCES players(id), FOREIGN KEY (player3id) REFERENCES players(id), FOREIGN KEY 
+        (player4id) REFERENCES players(id), FOREIGN KEY (player5id) REFERENCES players(id))`)
+    .run(`CREATE TABLE IF NOT EXISTS playerstats(playerid TEXT, matchID TEXT, week INTEGER,
     playerkills INTEGER, 
     playerdeaths INTEGER, 
     playerteamfight REAL,

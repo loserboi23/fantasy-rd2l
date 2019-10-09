@@ -3,7 +3,7 @@ Reddit Dota 2 Fantasy Points Bot for Discord
 
 
 
-# What to do
+# How to install and test
 
 1) Get discord bot token
 2) Get Discord Bot added to test server
@@ -11,16 +11,23 @@ Reddit Dota 2 Fantasy Points Bot for Discord
 4) node .import_csv.js
 5) node . 
 
-Your bot should be online idk if you have to download da dependicies
-
-node-fetch
-sqlite3
-discord.js
-cron
-fs should be in node.js by default 
+Your bot should be online
 
 
+# Bonus Files
+
+Export.js
 
 # TO DO
 
-idk bugs or someshit 
+# Dependencies 
+node-fetch
+
+sqlite3
+
+discord.js
+
+cron
+
+
+

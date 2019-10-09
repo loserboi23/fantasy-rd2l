@@ -156,7 +156,7 @@ client.on('message', message=>{
             break;           
 
         case "changename":
-            changeName(message.author.id, args[0]);
+            changeName(message.author.id, args[1]);
             break;
     
         case "captain_sheet":

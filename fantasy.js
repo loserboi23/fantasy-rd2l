@@ -645,7 +645,7 @@ exports.changeName = function(discordID, newName)
 
         sqlite.updateQuery(sql, [newName, discordID]).then(()=>
         {
-            resolve("Your name is now : " + discordID);
+            resolve("Your name is now : " + newName);
 
         }).catch(()=>
         {

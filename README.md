@@ -31,10 +31,6 @@ pm2 start index.js
 ```
 to start it as a process so it runs 24/7
 
-# How to contribute
-
-
-
 # Bonus Files
 
 ## export.js

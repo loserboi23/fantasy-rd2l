@@ -25,7 +25,11 @@ Hosted in DigitalOcean https://www.digitalocean.com/
 Your bot should be online
 
 _optional step_
-
+4) If you are using digitalocean or any other cloud providing service I use the command 
+``` 
+pm2 start index.js
+```
+to start it as a process so it runs 24/7
 
 # How to contribute
 

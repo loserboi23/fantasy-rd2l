@@ -641,7 +641,7 @@ exports.changeName = function(discordID, newName)
 {
     return new Promise(function(resolve,reject)
     {
-        var sql = `UPDATE fantasy_user SET name = ? WHERE id = `;
+        var sql = `UPDATE fantasy_user SET name = ? WHERE id = ?`;
 
         sqlite.updateQuery(sql, [newName, discordID]).then(()=>
         {

@@ -14,7 +14,7 @@ var string = [];
 
 db.serialize(()=>
 {
-    db.each("SELECT * FROM playerstats p INNER JOIN (SELECT name, handicap, pickorder, id FROM players) s ON p.playerid = s.id WHERE p.week = 2", function(err,row)
+    db.each("SELECT * FROM playerstats p INNER JOIN (SELECT name, handicap, pick_order, id FROM players) s ON p.playerid = s.id WHERE p.week = 3", function(err,row)
     {
         if(err)
         {
@@ -26,7 +26,7 @@ db.serialize(()=>
                 row.name,
                 row.matchID, 
                 row.id,
-                row.pickorder,
+                row.pick_order,
                 row.week,
                 row.playerkills , 
                 row.playerdeaths , 

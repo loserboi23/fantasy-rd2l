@@ -17,7 +17,7 @@ help_string = help_string.toString();
 
 
 var locked = false;
-var current_week = 3;
+var current_week = 4;
 
 
 
@@ -42,7 +42,7 @@ client.on('message', message=>{
     switch(args[0])
     {
         case "play":
-            playingWantingToPlay(message.author.id);
+            playingWantingToPlay(message.author.id, message.author.username);
             break;
 
         case "pick":
@@ -147,14 +147,16 @@ client.on('message', message=>{
             break;
 
 
-        case "leaderboards":
-            break;
-            
-        case "weekhand":
-            message.reply(message.author.id);
+        case "weekbreakdown":
+            fantasyBreakdown(message.author.id, args[1]);
             break;
 
+        case "leaderboards":
+            leaderboards();
+            break;           
+
         case "changename":
+            changeName(message.author.id, args[0]);
             break;
     
         case "captain_sheet":
@@ -164,7 +166,6 @@ client.on('message', message=>{
         case "player_sheet":
             message.reply("https://docs.google.com/spreadsheets/d/1My1y4EHpeKo4IL2mzhe7FJz2Fc0ELA7Sewyn1V2qAeg/edit#gid=881390361");
             break;
-
 
         case "github":
             message.reply("https://github.com/loserboi23/fantasy-rd2l");
@@ -218,9 +219,9 @@ client.on('message', message=>{
         message.reply(clientMessage);
     }
 
-    async function playingWantingToPlay(discordID)
+    async function playingWantingToPlay(discordID, discordName)
     {
-       let clientMessage = await fantasy.createFantasyUser(discordID);
+       let clientMessage = await fantasy.createFantasyUser(discordID, discordName);
        message.reply(clientMessage);
     }
 
@@ -261,6 +262,23 @@ client.on('message', message=>{
         message.reply(clientMessage);
     }
 
+    async function fantasyBreakdown(discordID,week)
+    {
+        let clientMessage = await fantasy.breakdown(discordID,week);
+        message.reply(clientMessage);
+    }
+
+    async function changeName(discordID, discordName)
+    {
+        let clientMessage = await fantasy.changeName(discordID,discordName);
+        message.reply(clientMessage);
+    }
+
+    async function leaderboards()
+    {
+        let clientMessage = await fantasy.leaderboards();
+        message.reply(clientMessage);
+    }
 });
 
 client.login(token).then(()=>
@@ -276,7 +294,7 @@ client.login(token).then(()=>
 
     }, 'America/Los_Angeles');
 
-    const job2 = new CronJob('00 00 17 * * */0', function()
+    const job2 = new CronJob('00 00 19 * * */0', function()
     {
      
         client.guilds.get(guildID).channels.get(channelID).send("Games are starting its locked");

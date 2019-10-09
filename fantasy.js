@@ -3,13 +3,13 @@ const sqlite = require('./sqlite.js');
 
 
 
-exports.createFantasyUser = function(discordID)
+exports.createFantasyUser = function(discordID, discordName)
 {
     //returns a string
 
     return new Promise(function(resolve,reject)
     {
-        var sqlInsert = 'INSERT INTO fantasy_user(id , total_fantasy_points) VALUES (?,?)';
+        var sqlInsert = 'INSERT INTO fantasy_user(id , name, total_fantasy_points) VALUES (?,?,?)';
         var sqlSelect = 'SELECT id FROM fantasy_user WHERE id = ?';
 
         sqlite.selectQuery(sqlSelect, [discordID]).then((results)=>
@@ -17,7 +17,7 @@ exports.createFantasyUser = function(discordID)
             if(results.length === 0)
             {
                 //Means the user is not in the database so we say hes not in it and we create
-                sqlite.insertQuery(sqlInsert, [discordID,0]).then((results)=>
+                sqlite.insertQuery(sqlInsert, [discordID, discordName, 0]).then((results)=>
                 {
                     resolve("You have now been added to the fantasy dota 2 league.")
 
@@ -590,7 +590,7 @@ exports.getTotalPoints = function(discordID)
 {
     return new Promise(function(resolve,reject)
     {
-        sql = `SELECT total_fantasy_points FROM fantasy_user WHERE (id = ?)`;
+        sql = `SELECT name, total_fantasy_points FROM fantasy_user WHERE (id = ?)`;
 
         sqlite.selectQuery(sql, [discordID]).then((result)=>
         {
@@ -600,7 +600,7 @@ exports.getTotalPoints = function(discordID)
             }
             else
             {
-                resolve("Total Points you have : " + result[0].total_fantasy_points);
+                resolve("Total Points " +  result[0].name + " has : " + result[0].total_fantasy_points.toFixed(2));
             }
     
         }).catch(()=>
@@ -637,3 +637,97 @@ exports.getPointsInWeek = function(discordID, week)
 }
 
 
+exports.changeName = function(discordID, newName)
+{
+    return new Promise(function(resolve,reject)
+    {
+        var sql = `UPDATE fantasy_user SET name = ? WHERE id = `;
+
+        sqlite.update(sql, [newName, discordID]).then(()=>
+        {
+            resolve("Your name is now : " + discordID);
+
+        }).catch(()=>
+        {
+            resolve("Something wrong");
+        })
+    });
+}
+
+exports.leaderboards = function()
+{
+    return new Promise(function(resolve,reject)
+    {
+        string = "\n ";
+        var sql = `SELECT * FROM fantasy_user ORDER BY total_fantasy_points DESC`;
+
+        sqlite.selectQuery(sql).then((results)=>
+        {
+            results.forEach(function(element)
+            {
+                string += element.name + ": "  + element.total_fantasy_points.toFixed(2) + " \n";
+            })
+
+            resolve(string);
+
+        }).catch(()=>
+        {
+            resolve("Something wrong");
+        })        
+    });
+}
+
+exports.breakdown = function(discordID, week)
+{
+    return new Promise(function(resolve,reject)
+    {
+        if(week === undefined)
+        {
+            resolve("Command is `breakdown <week>");
+        }
+        else
+        {
+            sqlite.selectQuery(`SELECT p.name, p.id FROM fantasyhand fh INNER JOIN (SELECT name, id, pick_order FROM players) p ON fh.player1id = p.id OR fh.player2id = p.id 
+            OR fh.player3id = p.id OR fh.player4id = p.id OR fh.player5id = p.id  WHERE  (fh.matchweek = ?) AND (fh.discord_id = ?) GROUP BY p.pick_order`,[week,discordID]).then((results)=>
+            {
+                if(results.length === 0)
+                {
+                    resolve("You didn't have a hand this week");
+                }
+                else
+                {
+                    var promise = [];
+                    results.forEach(element => {
+                        pro = sqlite.selectQuery(`SELECT SUM(fantasy_points_gained) as sum FROM playerstats WHERE (playerid = ?) AND (week = ?)`,[element['id'], week]); 
+                        promise.push(pro);
+                    });
+                
+                    Promise.all(promise).then((sumresult)=>
+                    {
+                        sumresult.forEach(element =>{
+                            if(element[0].sum == null)
+                            {
+                                element[0].sum = 0;
+                            } 
+                            else
+                            {
+                                element[0].sum =  element[0].sum.toFixed(2);
+                            }
+                        })
+                
+                        resolve(
+                            results[0].name + ": " + sumresult[0][0].sum + '\n' +
+                            results[1].name + ": " + sumresult[1][0].sum + '\n' +
+                            results[2].name + ": " + sumresult[2][0].sum + '\n' +
+                            results[3].name + ": " + sumresult[3][0].sum + '\n' +
+                            results[4].name + ": " + sumresult[4][0].sum + '\n' 
+                        );
+                    }) 
+                }
+        }).catch(()=>
+        {
+            resolve("Something wrong");
+        })
+        }
+    });
+}

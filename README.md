@@ -19,6 +19,14 @@ Your bot should be online
 Export.js
 
 # TO DO
+- [X] rewrite the database to add names
+      -[X] leaderboards
+
+## Version 2.0 for RD2L Season 20 
+- [] recreate the database
+- [] find a better way to input matches 
+- [] commands export.js and other external scripts so I don't have to run the script
+- [] Use Google Drive API 
 
 # Dependencies 
 node-fetch

@@ -17,7 +17,7 @@ help_string = help_string.toString();
 
 
 var locked = false;
-var current_week = 7;
+var current_week = 8;
 
 
 

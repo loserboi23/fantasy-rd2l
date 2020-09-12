@@ -19,7 +19,7 @@
   "dependencies": {
     "cron": "^1.7.2",
     "discord.js": "^11.5.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "sqlite3": "^4.1.0"
   }
 }
